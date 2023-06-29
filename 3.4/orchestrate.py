@@ -9,7 +9,7 @@ from sklearn.metrics import mean_squared_error
 import mlflow
 import xgboost as xgb
 from prefect import flow, task
-
+import os
 
 @task(retries=3, retry_delay_seconds=2)
 def read_data(filename: str) -> pd.DataFrame:
@@ -117,8 +117,13 @@ def main_flow(
     """The main training pipeline"""
 
     # MLflow settings
-    mlflow.set_tracking_uri("sqlite:///mlflow.db")
+    mlflow.set_tracking_uri("http://localhost:5001")
     mlflow.set_experiment("nyc-taxi-experiment-prefect-simple-deploy")
+
+    os.environ['MLFLOW_S3_ENDPOINT_URL'] = 'http://localhost:9000'
+    os.environ['AWS_ACCESS_KEY_ID'] ="admin"
+    os.environ['AWS_SECRET_ACCESS_KEY'] ="password" 
+    os.environ['MLFLOW_TRACKING_URI'] = 'http://localhost:5001'
 
     # Load
     df_train = read_data(train_path)
